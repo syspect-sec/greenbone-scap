@@ -42,12 +42,8 @@ DEFAULT_QUEUE_SIZE = 3
 
 def parse_args(args: Sequence[str] | None = None) -> Namespace:
     parser = ArgumentParser(
-        description="Create a CPE database."
-        "Load CPE information from the NIST REST API into the database and "
-        "create an up-to-date new CPE XML dictionary from the database. "
-        "By default all CPEs are loaded from the NIST REST API and stored in "
-        "a local cpe.db sqlite3 database but no CPE XML dictionary file is "
-        "created."
+        description="Create and update a CPE database. "
+        "Downloads CPE information from the NIST NVD REST API into the database. "
     )
     shtab.add_argument_to(parser)
 
@@ -128,7 +124,8 @@ def parse_args(args: Sequence[str] | None = None) -> Namespace:
     parser.add_argument(
         "--nvd-api-key",
         metavar="KEY",
-        help="Use a NVD API key for downloading the CPEs.",
+        help="Use a NVD API key for downloading the CPEs. Using an API key "
+        "allows for downloading with extended rate limits.",
     )
     return parser.parse_args(args)
 

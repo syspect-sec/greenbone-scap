@@ -41,8 +41,8 @@ DEFAULT_QUEUE_SIZE = 10
 
 def parse_args(args: Sequence[str] | None = None) -> Namespace:
     parser = ArgumentParser(
-        description="Downloads CVE information from the NIST REST API 2.0 and "
-        "converts them to the old XML based format."
+        description="Create and update a CVE database. "
+        "Downloads CVE information from the NIST NVD REST API into the database."
     )
     shtab.add_argument_to(parser)
 
@@ -58,33 +58,28 @@ def parse_args(args: Sequence[str] | None = None) -> Namespace:
         title="Database", description="Database related settings"
     )
     db_group.add_argument(
-        "--cve-database-type",
-        choices=("sqlite", "postgres"),
-        help="CVE database type to use. Either sqlite or postgres.",
-    )
-    db_group.add_argument(
-        "--cve-database-name",
+        "--database-name",
         help="Name of the CVE database.",
     )
     db_group.add_argument(
-        "--cve-database-host",
+        "--database-host",
         help="Name of the CVE database host.",
     )
     db_group.add_argument(
-        "--cve-database-port",
+        "--database-port",
         help="Name of the CVE database port.",
         type=int,
     )
     db_group.add_argument(
-        "--cve-database-user",
+        "--database-user",
         help="Name of the CVE database user.",
     )
     db_group.add_argument(
-        "--cve-database-password",
+        "--database-password",
         help="Name of the CVE database password.",
     )
     db_group.add_argument(
-        "--cve-database-schema",
+        "--database-schema",
         help="Name of the CVE database schema.",
     )
 
@@ -139,7 +134,8 @@ def parse_args(args: Sequence[str] | None = None) -> Namespace:
     parser.add_argument(
         "--nvd-api-key",
         metavar="KEY",
-        help="Use a NVD API key for downloading the CVEs.",
+        help="Use a NVD API key for downloading the CVEs. Using an API key "
+        "allows for downloading with extended rate limits.",
     )
     return parser.parse_args(args)
 
@@ -343,36 +339,36 @@ async def download(console: Console, error_console: Console):
             since = None
 
     cve_database_name = (
-        args.cve_database_name
+        args.database_name
         or os.environ.get("CVE_DATABASE_NAME")
         or os.environ.get("DATABASE_NAME")
         or DEFAULT_POSTGRES_DATABASE_NAME
     )
     cve_database_user: str = (
-        args.cve_database_user
+        args.database_user
         or os.environ.get("CVE_DATABASE_USER")
         or os.environ.get("DATABASE_USER")
         or DEFAULT_POSTGRES_USER
     )
     cve_database_host: str = (
-        args.cve_database_host
+        args.database_host
         or os.environ.get("CVE_DATABASE_HOST")
         or os.environ.get("DATABASE_HOST")
         or DEFAULT_POSTGRES_HOST
     )
     cve_database_port: int = int(
-        args.cve_database_port
+        args.database_port
         or os.environ.get("CVE_DATABASE_PORT")
         or os.environ.get("DATABASE_PORT")
         or DEFAULT_POSTGRES_PORT
     )
     cve_database_schema: str | None = (
-        args.cve_database_schema
+        args.database_schema
         or os.environ.get("CVE_DATABASE_SCHEMA")
         or os.environ.get("DATABASE_SCHEMA")
     )
     cve_database_password: str | None = (
-        args.cve_database_password
+        args.database_password
         or os.environ.get("CVE_DATABASE_PASSWORD")
         or os.environ.get("DATABASE_PASSWORD")
     )

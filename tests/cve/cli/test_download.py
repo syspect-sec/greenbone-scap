@@ -17,12 +17,12 @@ class ParseArgsTestCase(unittest.TestCase):
     def test_defaults(self):
         args = parse_args([])
 
-        self.assertIsNone(args.cve_database_name)
-        self.assertIsNone(args.cve_database_host)
-        self.assertIsNone(args.cve_database_port)
-        self.assertIsNone(args.cve_database_user)
-        self.assertIsNone(args.cve_database_password)
-        self.assertIsNone(args.cve_database_schema)
+        self.assertIsNone(args.database_name)
+        self.assertIsNone(args.database_host)
+        self.assertIsNone(args.database_port)
+        self.assertIsNone(args.database_user)
+        self.assertIsNone(args.database_password)
+        self.assertIsNone(args.database_schema)
         self.assertFalse(args.echo_sql)
         self.assertIsNone(args.verbose)
         self.assertIsNone(args.number)
@@ -36,27 +36,27 @@ class ParseArgsTestCase(unittest.TestCase):
     def test_cve_database(self):
         args = parse_args(
             [
-                "--cve-database-name",
+                "--database-name",
                 "scap",
-                "--cve-database-host",
+                "--database-host",
                 "a-db-server",
-                "--cve-database-port",
+                "--database-port",
                 "123",
-                "--cve-database-user",
+                "--database-user",
                 "scap-user",
-                "--cve-database-password",
+                "--database-password",
                 "1234",
-                "--cve-database-schema",
+                "--database-schema",
                 "scap-schema",
             ]
         )
 
-        self.assertEqual(args.cve_database_name, "scap")
-        self.assertEqual(args.cve_database_host, "a-db-server")
-        self.assertEqual(args.cve_database_port, 123)
-        self.assertEqual(args.cve_database_user, "scap-user")
-        self.assertEqual(args.cve_database_password, "1234")
-        self.assertEqual(args.cve_database_schema, "scap-schema")
+        self.assertEqual(args.database_name, "scap")
+        self.assertEqual(args.database_host, "a-db-server")
+        self.assertEqual(args.database_port, 123)
+        self.assertEqual(args.database_user, "scap-user")
+        self.assertEqual(args.database_password, "1234")
+        self.assertEqual(args.database_schema, "scap-schema")
 
     def test_echo_sql(self):
         args = parse_args(["--echo-sql"])
