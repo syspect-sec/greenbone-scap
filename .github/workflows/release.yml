@@ -1,4 +1,4 @@
-name: Release Python package with pontos
+name: Release
 
 on:
   pull_request:
@@ -22,12 +22,11 @@ jobs:
       - name: Release with release action
         uses: greenbone/actions/release@v3
         with:
-          conventional-commits: true
           github-user: ${{ secrets.GREENBONE_BOT }}
           github-user-mail: ${{ secrets.GREENBONE_BOT_MAIL }}
           github-user-token: ${{ secrets.GREENBONE_BOT_TOKEN }}
           gpg-key: ${{ secrets.GPG_KEY }}
           gpg-fingerprint: ${{ secrets.GPG_FINGERPRINT }}
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
-          strategy: calendar
+          release-type: semver
           ref: ${{ env.RELEASE_REF }}

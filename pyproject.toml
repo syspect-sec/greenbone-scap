@@ -1,19 +1,17 @@
 [tool.poetry]
-name = "example"                                      # FIXME
+name = "Greenbone SCAP"
 version = "0.1.0"
-description = "A GitHub Template for Python Projects"
+description = "Python library for downloading CVE and CPE from NIST NVD"
 authors = ["Greenbone <info@greenbone.net>"]
-license = "AGPL-3.0-or-later"
+license = "GPL-3.0-or-later"
 readme = "README.md"
 
 classifiers = [
   # Full list: https://pypi.org/pypi?%3Aaction=list_classifiers
   "Development Status :: 4 - Beta",
-  "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)", # pylint: disable=line-too-long
+  "License :: OSI Approved :: GNU General Public License v3 or later (AGPLv3+)", # pylint: disable=line-too-long
   "Environment :: Console",
   "Intended Audience :: Developers",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Operating System :: OS Independent",
@@ -21,16 +19,20 @@ classifiers = [
 ]
 
 packages = [
-  { include = "example" },
+  { include = "greenbone/scap" },
   { include = "tests", format = "sdist" },
-] # FIXME
+]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.11"
 shtab = ">=1.6.5"
+rich = ">=13.7.1"
+sqlalchemy = { extras = ["asyncio"], version = ">=2.0.28" }
+stamina = ">=23.2.0"
+psycopg = ">=3.1.13"
+pontos = ">=23.12.4"
 
 [tool.poetry.group.dev.dependencies]
-pontos = ">=22.10.0"
 autohooks-plugin-black = ">=23.10.0"
 autohooks-plugin-ruff = ">=23.10.0"
 autohooks-plugin-mypy = ">=23.10.0"
@@ -38,7 +40,7 @@ coverage = ">=7.2.7"
 
 [tool.black]
 line-length = 80
-target-version = ["py39", "py310", "py311", "py312"]
+target-version = ["py311", "py312"]
 exclude = '''
 /(
     \.git
@@ -61,7 +63,7 @@ pre-commit = [
 ]
 
 [tool.pontos.version]
-version-module-file = "example/__version__.py" # FIXME
+version-module-file = "greenbone/scap/__version__.py"
 
 [tool.ruff]
 line-length = 80
@@ -69,17 +71,18 @@ target-version = "py39"
 extend-select = ["I", "PLE", "PLW"]
 
 [tool.poetry.scripts]
-example-app = 'example:main' # FIXME
+greenbone-cve-download = 'greenbone.scap.cve.cli.download:main'
+greenbone-cpe-download = 'greenbone.scap.cpe.cli.download:main'
 
 [tool.mypy]
-files = "example"             # FIXME
+files = "greenbone"
 ignore_missing_imports = true
 explicit_package_bases = true
 
 [tool.coverage.run]
 branch = true
 omit = ["tests/*", "*/__init__.py"]
-source = ["example"]                # FIXME
+source = ["greenbone"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
