@@ -73,6 +73,7 @@ extend-select = ["I", "PLE", "PLW"]
 [tool.poetry.scripts]
 greenbone-cve-download = 'greenbone.scap.cve.cli.download:main'
 greenbone-cpe-download = 'greenbone.scap.cpe.cli.download:main'
+greenbone-cpe-find = 'greenbone.scap.cpe.cli.find:main'
 
 [tool.mypy]
 files = "greenbone"

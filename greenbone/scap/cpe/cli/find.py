@@ -24,7 +24,7 @@ from greenbone.scap.errors import ScapError
 
 
 def parse_args(args: Sequence[str] | None = None) -> Namespace:
-    parser = ArgumentParser()
+    parser = ArgumentParser(description="Search for CPEs in the database")
     shtab.add_argument_to(parser)
 
     parser.add_argument("cpe", help="CPE match to search for")
