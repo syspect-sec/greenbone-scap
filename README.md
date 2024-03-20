@@ -98,6 +98,10 @@ deleted by running `docker volume rm greenbone-scap_data`.
 To restart from scratch all containers have to be shutdown and the volumes have
 to be removed. This can be done by running `docker compose down -v`.
 
+The PostgreSQL database can be accessed from the docker host via
+`psql -U scap -h localhost -p 5432 scap` and using the defined database password
+from the `.env` file.
+
 ## Command Completion
 
 `greenbone-scap` comes with support for command line completion in bash and zsh.
