@@ -67,7 +67,7 @@ can be set via environment variables or passed as CLI arguments.
 
 ## Docker Compose
 
-The tool is easiest to use via the provided [docker compose](https://docs.docker.com/compose/)
+The tools are easiest to use via the provided [docker compose](https://docs.docker.com/compose/)
 [file](./docker/compose.yml). For a quick setup the following commands can be
 used:
 
@@ -78,15 +78,16 @@ docker compose up
 ```
 
 Additionally a [NIST API key](https://nvd.nist.gov/developers/request-an-api-key)
-can be used to lower the rate limits for the download.
+can be used to extend the rate limits for the download.
 
 ```sh
 echo "NVD_API_KEY=my-nist-api-key" >> .env
 ```
 
-On the first startup all CPE and CVE information will we downloaded. At the next
-startup only the changed and new CPEs and CVEs since the last download are
-updated or created.
+On the first startup all CPE and CVE information will be downloaded. This will
+take some hours depending on your network connection and the server reliability
+at NIST. On the next startup only the changed and new CPEs and CVEs since the
+previous startup are updated or created.
 
 To only download CPEs run `docker compose up cpe` and to only download CVEs
 `docker compose up cve`.
