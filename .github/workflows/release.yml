@@ -23,29 +23,9 @@ concurrency:
 
 jobs:
   build-and-release:
-    name: Create a new release with pontos
-    if: |
-      ( github.event_name == 'workflow_dispatch') || (
-        ( contains(github.event.pull_request.labels.*.name, 'patch release') ||
-          contains(github.event.pull_request.labels.*.name, 'minor release') ||
-          contains(github.event.pull_request.labels.*.name, 'major release')) &&
-          github.event.pull_request.merged == true )
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: Selecting the Release type
-        id: release-type
-        uses: greenbone/actions/release-type@v3
-        with:
-          release-type-input: ${{ inputs.release-type }}
-      - name: Release with release action
-        uses: greenbone/actions/release@v3
-        with:
-          github-user: ${{ secrets.GREENBONE_BOT }}
-          github-user-mail: ${{ secrets.GREENBONE_BOT_MAIL }}
-          github-user-token: ${{ secrets.GREENBONE_BOT_TOKEN }}
-          gpg-key: ${{ secrets.GPG_KEY }}
-          gpg-fingerprint: ${{ secrets.GPG_FINGERPRINT }}
-          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
-          release-type: ${{ steps.release-type.outputs.release-type }}
-          release-version: ${{ inputs.release-version }}
-          ref: ${{ steps.release-type.outputs.release-ref }}
+    name: Create a new release
+    uses: greenbone/workflows/.github/workflows/release-python.yml@main
+    secrets: inherit
+    with:
+      release-version: ${{ inputs.release-version }}
+      release-type: ${{ inputs.release-type }}
