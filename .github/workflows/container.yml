@@ -11,6 +11,10 @@ jobs:
     name: Build images
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -19,8 +23,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ vars.IMAGE_REGISTRY }}
-          username: ${{ secrets.GREENBONE_BOT }}
-          password: ${{ secrets.GREENBONE_BOT_PACKAGES_WRITE_TOKEN }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup container meta information
         id: meta
         uses: docker/metadata-action@v5
