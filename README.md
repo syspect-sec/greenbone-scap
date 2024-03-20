@@ -16,6 +16,7 @@ into a PostgreSQL database.
   - [Requirements](#requirements)
   - [Install using pipx](#install-using-pipx)
   - [Install using pip](#install-using-pip)
+- [Usage](#usage)
 - [Command Completion](#command-completion)
   - [Setup for bash](#setup-for-bash)
   - [Setup for zsh](#setup-for-zsh)
@@ -48,6 +49,20 @@ You can install the latest stable release of **greenbone-scap** from the [Python
 Package Index (pypi)][pypi] using [pip]
 
     python3 -m pip install --user greenbone-scap
+
+## Usage
+
+The **greenbone-scap** Python package provides three tools,
+
+* `greenbone-cve-download` to download all CVE information from NIST NVD into
+  a PostgreSQL database,
+* `greenbone-cpe-download` to download all CPE information from NIST NVD into a
+  PostgreSQL database and
+* `greenbone-cpe-find` to search for specific CPEs in the PostgreSQL database.
+
+All three tools require to setup a PostgreSQL database to work correctly. The
+parameters for the PostgreSQL database like host, port, username and password
+can be set via environment variables or passed as CLI arguments.
 
 ## Command Completion
 
