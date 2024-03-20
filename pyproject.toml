@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "Greenbone SCAP"
+name = "greenbone-scap"
 version = "0.1.0"
 description = "Python library for downloading CVE and CPE from NIST NVD"
 authors = ["Greenbone <info@greenbone.net>"]
