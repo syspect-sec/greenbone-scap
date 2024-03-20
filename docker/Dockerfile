@@ -29,7 +29,8 @@ RUN apt-get update && \
     gosu \
     python3 \
     python-is-python3 \
-    python3-pip && \
+    python3-pip \
+    libpq5 && \
     apt-get remove --purge --auto-remove -y && \
     rm -rf /var/lib/apt/lists/*
 
