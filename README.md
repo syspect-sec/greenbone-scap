@@ -17,6 +17,7 @@ into a PostgreSQL database.
   - [Install using pipx](#install-using-pipx)
   - [Install using pip](#install-using-pip)
 - [Usage](#usage)
+- [Docker Compose](#docker-compose)
 - [Command Completion](#command-completion)
   - [Setup for bash](#setup-for-bash)
   - [Setup for zsh](#setup-for-zsh)
@@ -63,6 +64,38 @@ The **greenbone-scap** Python package provides three tools,
 All three tools require to setup a PostgreSQL database to work correctly. The
 parameters for the PostgreSQL database like host, port, username and password
 can be set via environment variables or passed as CLI arguments.
+
+## Docker Compose
+
+The tool is easiest to use via the provided [docker compose](https://docs.docker.com/compose/)
+[file](./docker/compose.yml). For a quick setup the following commands can be
+used:
+
+```sh
+cd docker
+echo "DATABASE_PASSWORD=my-super-safe-password" > .env
+docker compose up
+```
+
+Additionally a [NIST API key](https://nvd.nist.gov/developers/request-an-api-key)
+can be used to lower the rate limits for the download.
+
+```sh
+echo "NVD_API_KEY=my-nist-api-key" >> .env
+```
+
+On the first startup all CPE and CVE information will we downloaded. At the next
+startup only the changed and new CPEs and CVEs since the last download are
+updated or created.
+
+To only download CPEs run `docker compose up cpe` and to only download CVEs
+`docker compose up cve`.
+
+To re-download and re-update all CPE and CVE information the data volume can be
+deleted by running `docker volume rm greenbone-scap_data`.
+
+To restart from scratch all containers have to be shutdown and the volumes have
+to be removed. This can be done by running `docker compose down -v`.
 
 ## Command Completion
 
