@@ -44,6 +44,12 @@ DEFAULT_YIELD_PER = 100
 
 
 class CVEManager(AsyncContextManager):
+    """
+    Manager for the CVE database.
+
+    Read and write CVEs from and to the database.
+    """
+
     def __init__(
         self,
         db: Database,
@@ -52,6 +58,17 @@ class CVEManager(AsyncContextManager):
         yield_per: int = DEFAULT_YIELD_PER,
         update: bool = True,
     ) -> None:
+        """
+        Create a new CVEManager.
+
+        Args:
+            db: The database to use.
+            insert_threshold: The number of CVEs to insert before committing.
+                Use only when adding single CVEs with add.
+            yield_per: The number of CVEs to yield per transaction when querying.
+            update: Whether to update existing CVEs when adding new ones.
+                Defaults to True.
+        """
         self._db = db
         self._cves: list[CVE] = []
         self._insert_threshold = insert_threshold
@@ -74,12 +91,24 @@ class CVEManager(AsyncContextManager):
         return
 
     async def add(self, cve: CVE) -> None:
+        """
+        Add a CVE to the database.
+
+        The CVE will be added to the database when the number of CVEs reaches
+        the threshold set in the constructor.
+        """
         self._cves.append(cve)
 
         if len(self._cves) > self._insert_threshold:
             await self.add_cves(self._cves)
+            self._cves = []
 
     async def add_cves(self, cves: Sequence[CVE]) -> None:
+        """
+        Add a sequence of CVEs to the database.
+
+        All CVEs will be added to the database in a single transaction.
+        """
         if not cves:
             return
 
@@ -129,8 +158,6 @@ class CVEManager(AsyncContextManager):
             )
 
             await self._insert_foreign_data(transaction, cves)
-
-        self._cves = []
 
     async def _insert_foreign_data(
         self, connection: AsyncConnection, cves: Sequence[CVE]
