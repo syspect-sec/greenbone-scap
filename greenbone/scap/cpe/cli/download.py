@@ -183,37 +183,41 @@ class CPECli:
     ) -> None:
         task = progress.add_task("Downloading CPEs", total=total_cpes)
 
-        with Timer() as download_timer:
-            count = 0
-            async for attempt in stamina.retry_context(
-                on=httpx.HTTPError,
-                attempts=retry_attempts,
-                timeout=None,
-            ):
-                with attempt:
-                    attempt_number = attempt.num
-                    if attempt_number > 1:
-                        self.console.log(
-                            "HTTP request failed. Download attempt "
-                            f"{attempt_number} of {retry_attempts}"
-                        )
+        try:
+            with Timer() as download_timer:
+                count = 0
+                async for attempt in stamina.retry_context(
+                    on=httpx.HTTPError,
+                    attempts=retry_attempts,
+                    timeout=None,
+                ):
+                    with attempt:
+                        attempt_number = attempt.num
+                        if attempt_number > 1:
+                            self.console.log(
+                                "HTTP request failed. Download attempt "
+                                f"{attempt_number} of {retry_attempts}"
+                            )
 
-                    async for cpes in results.chunks():
-                        count += len(cpes)
-                        progress.update(task, completed=count)
+                        async for cpes in results.chunks():
+                            count += len(cpes)
+                            progress.update(task, completed=count)
 
-                        if self.verbose:
-                            self.console.log(f"Downloaded {count:,} CPEs")
+                            if self.verbose:
+                                self.console.log(f"Downloaded {count:,} CPEs")
 
-                        await self.queue.put(cpes)
+                            await self.queue.put(cpes)
 
-        self.console.log(
-            f"Downloaded {count:,} CPEs in "
-            f"{download_timer.elapsed_time:0.4f} seconds."
-        )
+            self.console.log(
+                f"Downloaded {count:,} CPEs in "
+                f"{download_timer.elapsed_time:0.4f} seconds."
+            )
+
+        finally:
+            # signal worker that we are finished with downloading
+            self.event.set()
 
     async def _join(self):
-        self.event.set()
         await self.queue.join()
 
     async def download(
@@ -262,40 +266,24 @@ class CPECli:
 
         total_cpes = min(request_results or result_count, result_count)
 
-        task = asyncio.create_task(
-            self._worker(
-                progress,
-                manager,
-                total_cpes=total_cpes,
+        async with asyncio.TaskGroup() as tg:
+            tg.create_task(
+                self._worker(
+                    progress,
+                    manager,
+                    total_cpes=total_cpes,
+                )
             )
-        )
-
-        try:
-            await self._producer(
-                progress,
-                results,  # type: ignore
-                additional_retry_attempts,  # type: ignore
-                total_cpes=total_cpes,
+            producer = tg.create_task(
+                self._producer(
+                    progress,
+                    results,
+                    additional_retry_attempts,
+                    total_cpes=total_cpes,
+                )
             )
+            await producer
             await self._join()
-        except BaseException:
-            # cancel task on errors (for example HTTPStatusError)
-            task.cancel()
-            raise
-        finally:
-            try:
-                # wait for task to finish or to cleanup from cancelling
-                # the psycopg api produces all kind of errors while cleaning up
-                # the task. therefore we wait only 60 seconds to not create a
-                # lockup
-                await asyncio.wait_for(task, 60)
-            except (asyncio.TimeoutError, asyncio.CancelledError):
-                pass
-            except Exception:
-                # raise exception if task has not been cancelled
-                # otherwise just ignore exception raised during cancelling
-                if not task.cancelled():
-                    raise
 
 
 async def download(console: Console, error_console: Console) -> None:
