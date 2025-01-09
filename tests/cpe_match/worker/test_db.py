@@ -268,8 +268,8 @@ class WriteTestCase(unittest.IsolatedAsyncioTestCase):
         "greenbone.scap.generic_cli.worker.db.PostgresDatabase", autospec=True
     )
     async def test_write_json(self, db_mock: AsyncMock):
-        console = Console(quiet=False)
-        error_console = Console(quiet=False)
+        console = Console(quiet=True)
+        error_console = Console(quiet=True)
         progress = Progress(disable=True)
 
         producer = CpeMatchMockProducer(
@@ -317,5 +317,3 @@ class WriteTestCase(unittest.IsolatedAsyncioTestCase):
             self.assertGreaterEqual(
                 self.NUM_CHUNKS, db_mock.mock_calls.count(insert_call)
             )
-
-            print(db_mock)
