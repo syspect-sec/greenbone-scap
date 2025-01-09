@@ -48,8 +48,9 @@ def convert_keys_to_camel(obj: Any) -> Any:
             # Exclude None values
             if v is not None:
                 new_key = _snake_to_camel(old_key)
-                obj[new_key] = v
-            del obj[old_key]
+                if new_key != old_key:
+                    obj[new_key] = v
+                    del obj[old_key]
     elif isinstance(obj, list):
         for item in obj:
             convert_keys_to_camel(item)
