@@ -17,7 +17,7 @@ from greenbone.scap.generic_cli.producer.nvd_api import NvdApiProducer
 
 class CpeMatchNvdApiProducer(NvdApiProducer[CPEMatchString]):
     """
-    Abstract async context manager class for a producer querying
+    Async context manager class for a producer querying
     CPE match strings from an NVD API.
     """
 

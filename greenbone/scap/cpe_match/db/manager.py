@@ -218,7 +218,7 @@ class CPEMatchStringDatabaseManager(AsyncContextManager):
     async def count(
         self,
         *,
-        match_criteria_id: str | None,
+        match_criteria_id: str | None = None,
         last_modification_start_date: datetime | None = None,
         last_modification_end_date: datetime | None = None,
         created_start_date: datetime | None = None,
