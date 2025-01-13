@@ -41,7 +41,7 @@ def convert_keys_to_camel(obj: Any) -> Any:
     """
 
     if isinstance(obj, dict):
-        old_keys = set(obj.keys())
+        old_keys = list(obj.keys())
         for old_key in old_keys:
             v = obj[old_key]
             convert_keys_to_camel(v)
