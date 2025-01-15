@@ -293,7 +293,8 @@ class DatabaseProducer(BaseScapProducer, Generic[T]):
                     self._progress.update(task, completed=count)
 
                 count += len(chunk)
-                await self._queue.put_chunk(chunk)
+                if len(chunk):
+                    await self._queue.put_chunk(chunk)
                 self._progress.update(task, completed=count)
 
             self._console.log(
