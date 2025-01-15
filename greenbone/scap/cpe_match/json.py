@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import gzip
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional, Sequence, TextIO
@@ -49,10 +49,10 @@ class MatchStringResponse:
     start_index: int
     total_results: int
     timestamp: datetime
-    match_strings: list[MatchStringItem]
 
     format: str = "NVD_CPEMatchString"
     version: str = "2.0"
+    match_strings: list[MatchStringItem] = field(default_factory=list)
 
 
 class MatchStringJsonManager(JsonManager):
