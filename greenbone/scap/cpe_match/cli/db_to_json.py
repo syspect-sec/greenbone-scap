@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import tracemalloc
 from argparse import ArgumentParser, Namespace
 from typing import Sequence
 
@@ -12,8 +11,7 @@ from rich.progress import Progress
 from greenbone.scap.cli import CLIRunner
 from greenbone.scap.cpe_match.cli.processor import CpeMatchProcessor
 from greenbone.scap.cpe_match.producer.db import CpeMatchDatabaseProducer
-
-from ..worker.json import CpeMatchJsonWriteWorker
+from greenbone.scap.cpe_match.worker.json import CpeMatchJsonWriteWorker
 
 
 def parse_args(args: Sequence[str] | None = None) -> Namespace:
@@ -36,7 +34,6 @@ def parse_args(args: Sequence[str] | None = None) -> Namespace:
 async def download(console, error_console) -> None:
     args = parse_args()
 
-    tracemalloc.start()
     with Progress(console=console) as progress:
         producer = CpeMatchDatabaseProducer.from_args(
             args,
@@ -61,7 +58,6 @@ async def download(console, error_console) -> None:
         )
 
         await processor.run()
-        print(f"tracemalloc {tracemalloc.get_traced_memory()}")
 
 
 def main() -> None:
