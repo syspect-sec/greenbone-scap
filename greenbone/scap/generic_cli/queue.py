@@ -97,9 +97,15 @@ class ScapChunkQueue(Generic[T]):
 
     def set_producer_finished(self) -> None:
         """
-        Sets the "producer finished" event flag.
+        Sets the "producer finished" event flag and adds an empty chunk
+        to the queue if it is not full to unblock workers already waiting
+        to get a new chunk.
         """
         self._producer_finished_event.set()
+        try:
+            self._queue.put_nowait([])
+        except asyncio.QueueFull:
+            pass
 
     async def join(self) -> None:
         """

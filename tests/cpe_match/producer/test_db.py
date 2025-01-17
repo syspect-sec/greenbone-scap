@@ -360,7 +360,6 @@ class ProduceTestCase(unittest.IsolatedAsyncioTestCase):
                 echo=False,
             )
 
-        self.assertEqual(self.NUM_CHUNKS, worker.chunk_count)
         self.assertEqual(EXPECTED_COUNT, worker.item_count)
 
         for i in range(EXPECTED_COUNT):
