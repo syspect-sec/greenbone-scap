@@ -183,15 +183,15 @@ class CVECli:
             try:
                 cves = await self.queue.get()
 
-                processed += len(cves)
-                progress.update(task, completed=processed)
-
                 await manager.add_cves(cves)
 
                 self.cves_to_update.update((cve.id for cve in cves))
 
                 self.queue.task_done()
 
+                # Update the console and log to stdout
+                processed += len(cves)
+                progress.update(task, completed=processed)
                 self.console.log(f"Processed {processed:,} CVEs")
             except asyncio.CancelledError as e:
                 self.console.log("Worker has been cancelled")
@@ -400,6 +400,8 @@ async def download(console: Console, error_console: Console):
         console, verbose=verbose, chunk_size=chunk_size, queue_size=queue_size
     )
 
+    run_time = datetime.now()
+
     with Progress(console=console) as progress:
         async with (
             cve_database,
@@ -434,8 +436,6 @@ async def download(console: Console, error_console: Console):
         if run_time_file:
             if until:
                 run_time = until
-            else:
-                run_time = datetime.now()
             # ensure directories exist
             run_time_file.parent.mkdir(parents=True, exist_ok=True)
             run_time_file.write_text(
