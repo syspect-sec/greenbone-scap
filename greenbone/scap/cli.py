@@ -21,15 +21,20 @@ DEFAULT_POSTGRES_USER = "scap"
 DEFAULT_POSTGRES_HOST = "localhost"
 DEFAULT_POSTGRES_PORT = 5432
 DEFAULT_POSTGRES_DATABASE_NAME = "scap"
+DEFAULT_POSTGRES_SSLROOTCERT: Optional[str] = None
+DEFAULT_POSTGRES_SSLCERT: Optional[str] = None
+DEFAULT_POSTGRES_SSLKEY: Optional[str] = None
+DEFAULT_POSTGRES_SSLPASSPHRASE: Optional[str] = None
 DEFAULT_VERBOSITY = 0
 
+SSLParams = Optional[Dict[str, Any]]
+_SSLMODE_CHOICES = ["disable", "allow", "prefer", "require", "verify-ca", "verify-full"]
+_CHANNELBINDING_CHOICES = ["require", "prefer", "disable"]
 
 class CLIError(ScapError):
     pass
 
-
 runner_func = Callable[[Console, Console], Coroutine[Any, Any, int | None]]
-
 
 class CLI:
     def __init__(self, console: Console, error_console: Console) -> None:

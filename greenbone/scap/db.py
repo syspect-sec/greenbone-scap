@@ -20,7 +20,6 @@ DEFAULT_CONNECTIONS = 20
 MAX_CONNECTIONS = 50
 DEFAULT_CONNECTION_TIMEOUT = 300.0  # 5 min
 
-
 class Database(AsyncContextManager):
     def __init__(
         self,
@@ -60,23 +59,16 @@ class Database(AsyncContextManager):
         await self.engine.dispose()
         return
 
-
-class PostgresDatabase(Database):
+class AsyncPostgresBase(Database):
     def __init__(
-        self,
+        self, url: str,
         *,
-        password: str,
-        user: str,
-        host: str,
-        port: str | int = 5432,
-        dbname: str,
         echo: bool | Literal["debug"] = False,
         schema: str | None = None,
     ) -> None:
         engine = create_async_engine(
-            "postgresql+psycopg_async://"
-            f"{quote_plus(user)}:{quote_plus(password)}@{host}:{port}/{dbname}",
-            echo=echo,
+            url,
+            echo=echo
             pool_size=DEFAULT_CONNECTIONS,
             max_overflow=MAX_CONNECTIONS - DEFAULT_CONNECTIONS,
             pool_timeout=DEFAULT_CONNECTION_TIMEOUT,
@@ -89,3 +81,38 @@ class PostgresDatabase(Database):
 
     def insert(self, table) -> PostgresInsert:
         return PostgresInsert(table)
+
+class PostgresDatabase(AsyncPostgresBase):
+    def __init__(
+        self,
+        *,
+        password: str,
+        user: str,
+        host: str,
+        port: int | str = 5432,
+        dbname: str,
+        echo: bool | Literal["debug"] = False,
+        schema: str | None = None,
+        ssl_mode: str = None,
+        ssl_params: Optional[Mapping[str, Any]] = None,
+    ) -> None:
+        # Build base DSN
+        dsn = (
+            "postgresql+psycopg_async://"
+            f"{quote_plus(user)}:{quote_plus(password)}@{host}:{port}/{dbname}"
+        )
+
+        dsn = f"{dsn}?{urlencode({'sslmode': ssl_mode, **(ssl_params or {})})}"
+
+        engine = create_async_engine(
+            dsn,
+            echo=echo,
+            pool_size=DEFAULT_CONNECTIONS,
+            max_overflow=MAX_CONNECTIONS - DEFAULT_CONNECTIONS,
+            pool_timeout=DEFAULT_CONNECTION_TIMEOUT,
+        )
+
+        if schema:
+            engine = engine.execution_options(schema_translate_map={None: schema})
+
+        super().__init__(engine)

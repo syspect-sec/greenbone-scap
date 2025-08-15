@@ -7,7 +7,7 @@ import os
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Dict, Optional, Union
 
 import shtab
 import stamina
@@ -23,10 +23,18 @@ from greenbone.scap.cli import (
     DEFAULT_POSTGRES_HOST,
     DEFAULT_POSTGRES_PORT,
     DEFAULT_POSTGRES_USER,
+    DEFAULT_POSTGRES_SSLROOTCERT,
+    DEFAULT_POSTGRES_SSLCERT,
+    DEFAULT_POSTGRES_SSLKEY,
+    DEFAULT_POSTGRES_SSLPASSPHRASE,
+    SSLParams,
+    _SSLMODE_CHOICES,
+    _CHANNELBINDING_CHOICES,
     DEFAULT_RETRIES,
     DEFAULT_VERBOSITY,
     CLIError,
     CLIRunner,
+
 )
 from greenbone.scap.constants import STAMINA_API_RETRY_EXCEPTIONS
 from greenbone.scap.cve.manager import CVEManager
@@ -38,6 +46,44 @@ stamina.instrumentation.set_on_retry_hooks([])
 
 DEFAULT_QUEUE_SIZE = 10
 
+def get_ssl_params(args: argparse.Namespace) -> SSLParams:
+    """
+    Returns a value compatible with the logic for PostgresDatabase class instance:
+      - None      -> no SSL parameters included
+      - dict      -> libpq-style keys (channel_binding, sslrootcert, sslcert, sslkey, sslpassword)
+    """
+
+    params = {
+        "channel_binding": (
+            args.channel_binding
+            or os.environ.get("POSTGRES_CHANNELBINDING")
+        ),
+        "sslrootcert": (
+            args.ssl_rootcert
+            or os.environ.get("POSTGRES_SSLROOTCERT")
+            or DEFAULT_POSTGRES_SSLROOTCERT
+        ),
+        "sslcert": (
+            args.ssl_cert
+            or os.environ.get("POSTGRES_SSLCERT")
+            or DEFAULT_POSTGRES_SSLCERT
+        ),
+        "sslkey": (
+            args.ssl_key
+            or os.environ.get("POSTGRES_SSLKEY")
+            or DEFAULT_POSTGRES_SSLKEY
+        ),
+        "sslpassword": (
+            args.ssl_passphrase
+            or os.environ.get("POSTGRES_SSLPASSPHRASE")
+            or DEFAULT_POSTGRES_SSLPASSPHRASE
+        ),
+    }
+
+    if not any(v is not None for v in params.values()):
+        return None
+
+    return {k: v for k, v in params.items() if v is not None}
 
 def parse_args(args: Sequence[str] | None = None) -> Namespace:
     parser = ArgumentParser(
@@ -81,6 +127,31 @@ def parse_args(args: Sequence[str] | None = None) -> Namespace:
     db_group.add_argument(
         "--database-schema",
         help="Name of the CVE database schema.",
+    )
+    # SSL full control (libpq-style)
+    db_group.add_argument(
+        "--ssl-mode", choices=_SSLMODE_CHOICES, default="prefer"
+        help="libpq sslmode value."
+    )
+    db_group.add_argument(
+        "--channel-binding", choices=_CHANNELBINDING_CHOICES, default="prefer",
+        help="SASL channel binding mode uses SCRAM-SHA-256-PLUS."
+    )
+    db_group.add_argument(
+        "--ssl-rootcert", metavar="PATH",
+        help="Path to CA certificate bundle (PEM)."
+    )
+    db_group.add_argument(
+        "--ssl-cert", metavar="PATH",
+        help="Path to client certificate (PEM)."
+    )
+    db_group.add_argument(
+        "--ssl-key", metavar="PATH",
+        help="Path to client private key (PEM)."
+    )
+    db_group.add_argument(
+        "--ssl-passphrase", metavar="PASS",
+        help="Passphrase for encrypted client certificate."
     )
 
     since_group = parser.add_mutually_exclusive_group()
@@ -384,6 +455,14 @@ async def download(console: Console, error_console: Console):
     if not cve_database_password:
         raise CLIError("Missing password for CVE database")
 
+    ssl_mode = (
+        args.sslmode
+        or os.environ.get("POSTGRES_SSLMODE")
+    )
+    if ssl_mode != "disable":
+        ssl_params = get_ssl_params(args)
+    else: ssl_params = None
+
     cve_database = PostgresDatabase(
         user=cve_database_user,
         password=cve_database_password,
@@ -391,6 +470,8 @@ async def download(console: Console, error_console: Console):
         port=cve_database_port,
         dbname=cve_database_name,
         schema=cve_database_schema,
+        ssl_mode=ssl_mode,
+        ssl_params=ssl_params,
         echo=echo_sql,
     )
     if verbose:
