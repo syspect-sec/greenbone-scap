@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from types import TracebackType
-from typing import Any, AsyncContextManager, Callable, Literal, Self
-from urllib.parse import quote_plus
+from typing import Any, AsyncContextManager, Callable, Literal, Self, Optional, Mapping
+from urllib.parse import quote_plus, urlencode
 
 from sqlalchemy.dialects.postgresql import Insert as PostgresInsert
 from sqlalchemy.dialects.sqlite import Insert as SqliteInsert
@@ -68,7 +68,7 @@ class AsyncPostgresBase(Database):
     ) -> None:
         engine = create_async_engine(
             url,
-            echo=echo
+            echo=echo,
             pool_size=DEFAULT_CONNECTIONS,
             max_overflow=MAX_CONNECTIONS - DEFAULT_CONNECTIONS,
             pool_timeout=DEFAULT_CONNECTION_TIMEOUT,
@@ -96,23 +96,10 @@ class PostgresDatabase(AsyncPostgresBase):
         ssl_mode: str = None,
         ssl_params: Optional[Mapping[str, Any]] = None,
     ) -> None:
-        # Build base DSN
+        # Build PostgreSQL DSN
         dsn = (
             "postgresql+psycopg_async://"
             f"{quote_plus(user)}:{quote_plus(password)}@{host}:{port}/{dbname}"
+            f"?{urlencode({'sslmode': ssl_mode, **(ssl_params or {})})}"
         )
-
-        dsn = f"{dsn}?{urlencode({'sslmode': ssl_mode, **(ssl_params or {})})}"
-
-        engine = create_async_engine(
-            dsn,
-            echo=echo,
-            pool_size=DEFAULT_CONNECTIONS,
-            max_overflow=MAX_CONNECTIONS - DEFAULT_CONNECTIONS,
-            pool_timeout=DEFAULT_CONNECTION_TIMEOUT,
-        )
-
-        if schema:
-            engine = engine.execution_options(schema_translate_map={None: schema})
-
-        super().__init__(engine)
+        super().__init__(dsn, echo=echo, schema=schema)

@@ -7,7 +7,7 @@ import os
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, Sequence
 
 import shtab
 import stamina
@@ -27,9 +27,6 @@ from greenbone.scap.cli import (
     DEFAULT_POSTGRES_SSLCERT,
     DEFAULT_POSTGRES_SSLKEY,
     DEFAULT_POSTGRES_SSLPASSPHRASE,
-    SSLParams,
-    _SSLMODE_CHOICES,
-    _CHANNELBINDING_CHOICES,
     DEFAULT_RETRIES,
     DEFAULT_VERBOSITY,
     CLIError,
@@ -46,7 +43,11 @@ stamina.instrumentation.set_on_retry_hooks([])
 
 DEFAULT_QUEUE_SIZE = 10
 
-def get_ssl_params(args: argparse.Namespace) -> SSLParams:
+SSLParams = Optional[Dict[str, Any]]
+_SSLMODE_CHOICES = ["disable", "allow", "prefer", "require", "verify-ca", "verify-full"]
+_CHANNELBINDING_CHOICES = ["require", "prefer", "disable"]
+
+def get_ssl_params(args: Namespace) -> SSLParams:
     """
     Returns a value compatible with the logic for PostgresDatabase class instance:
       - None      -> no SSL parameters included
@@ -130,12 +131,12 @@ def parse_args(args: Sequence[str] | None = None) -> Namespace:
     )
     # SSL full control (libpq-style)
     db_group.add_argument(
-        "--ssl-mode", choices=_SSLMODE_CHOICES, default="prefer"
-        help="libpq sslmode value."
+        "--sslmode", choices=_SSLMODE_CHOICES, default="prefer",
+        help="libpq sslmode value (default='prefer')."
     )
     db_group.add_argument(
         "--channel-binding", choices=_CHANNELBINDING_CHOICES, default="prefer",
-        help="SASL channel binding mode uses SCRAM-SHA-256-PLUS."
+        help="SASL channel binding mode uses SCRAM-SHA-256-PLUS (default='prefer')."
     )
     db_group.add_argument(
         "--ssl-rootcert", metavar="PATH",

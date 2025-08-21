@@ -6,7 +6,7 @@
 import asyncio
 import sys
 from inspect import isclass
-from typing import Any, Callable, Coroutine, NoReturn, Type
+from typing import Any, Callable, Coroutine, NoReturn, Type, Optional
 
 import httpx
 from rich.console import Console
@@ -27,9 +27,6 @@ DEFAULT_POSTGRES_SSLKEY: Optional[str] = None
 DEFAULT_POSTGRES_SSLPASSPHRASE: Optional[str] = None
 DEFAULT_VERBOSITY = 0
 
-SSLParams = Optional[Dict[str, Any]]
-_SSLMODE_CHOICES = ["disable", "allow", "prefer", "require", "verify-ca", "verify-full"]
-_CHANNELBINDING_CHOICES = ["require", "prefer", "disable"]
 
 class CLIError(ScapError):
     pass
